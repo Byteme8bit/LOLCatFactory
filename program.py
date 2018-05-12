@@ -1,7 +1,8 @@
-import cat_service
-
 __author__ = "byteme8bit"
 import os
+import cat_service
+import subprocess
+import platform
 
 
 def main():
@@ -11,7 +12,7 @@ def main():
     print('Found or created folder: ' + folder)
 
     download_cats(folder)
-    # display cats
+    display_cats(folder)
 
 
 def print_header():
@@ -26,7 +27,7 @@ def get_or_create_output_folder():
     # print(base_folder)
     folder = 'cats_pictures'
     full_path = os.path.join(base_folder, folder)
-    # print(full_path)
+    print(full_path)
 
     if not os.path.exists(full_path) or not os.path.isdir(full_path):
         print('Creating new directory at {}'.format(full_path))
@@ -43,6 +44,19 @@ def download_cats(folder):
         print('Downloading cat ' + name)
         cat_service.get_cat(folder, name)
     print('Done.')
+
+
+def display_cats(folder):
+    print('Displaying cats in OS window...')
+    if platform.system() == 'Darwin':
+        subprocess.call(['open', folder])
+    elif platform.system() == 'Windows':
+        subprocess.call(['explorer', folder])
+    elif platform.system() == 'Linux':
+        subprocess.call(['xdg-open', folder])
+    else:
+        print("We don't support your OS: " + platform.system())
+
 
 
 if __name__ == '__main__':
