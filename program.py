@@ -58,6 +58,5 @@ def display_cats(folder):
         print("We don't support your OS: " + platform.system())
 
 
-
 if __name__ == '__main__':
     main()
