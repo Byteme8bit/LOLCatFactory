@@ -1,37 +1,99 @@
-## Welcome to GitHub Pages
+## LOLCatFactory
 
-You can use the [editor on GitHub](https://github.com/Byteme8bit/LOLCatFactory/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+This is a small program to download random LOLCat pictures
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+### Program internals
 
-### Markdown
+The program consists of two pieces. Program.py and cat_service.py. The first contains the main functions and the latter contains the code related to downloading the LOLCats
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+The code for program.py:
+```
+__author__ = "byteme8bit"
+import os
+import cat_service
+import subprocess
+import platform
 
-```markdown
-Syntax highlighted code block
 
-# Header 1
-## Header 2
-### Header 3
+def main():
+    print_header()
 
-- Bulleted
-- List
+    folder = get_or_create_output_folder()
+    print('Found or created folder: ' + folder)
 
-1. Numbered
-2. List
+    download_cats(folder)
+    display_cats(folder)
 
-**Bold** and _Italic_ and `Code` text
 
-[Link](url) and ![Image](src)
+def print_header():
+    print('--------------------------------------')
+    print('                LOL CATS              ')
+    print('--------------------------------------')
+    print()
+
+
+def get_or_create_output_folder():
+    base_folder = os.path.dirname(__file__)
+    # print(base_folder)
+    folder = 'cats_pictures'
+    full_path = os.path.join(base_folder, folder)
+    print(full_path)
+
+    if not os.path.exists(full_path) or not os.path.isdir(full_path):
+        print('Creating new directory at {}'.format(full_path))
+        os.mkdir(full_path)
+
+    return full_path
+
+
+def download_cats(folder):
+    print('Contacting server to download cats...')
+    cat_count = 8
+    for i in range(1, cat_count + 1):
+        name = 'lolcat_{}'.format(format(i))
+        print('Downloading cat ' + name)
+        cat_service.get_cat(folder, name)
+    print('Done.')
+
+
+def display_cats(folder):
+    print('Displaying cats in OS window...')
+    if platform.system() == 'Darwin':
+        subprocess.call(['open', folder])
+    elif platform.system() == 'Windows':
+        subprocess.call(['explorer', folder])
+    elif platform.system() == 'Linux':
+        subprocess.call(['xdg-open', folder])
+    else:
+        print("We don't support your OS: " + platform.system())
+
+
+if __name__ == '__main__':
+    main()
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+The code for cat_service.py:
+```
+__author__ = "byteme8bit"
+import os
+import shutil
+import requests
 
-### Jekyll Themes
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/Byteme8bit/LOLCatFactory/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+def get_cat(folder, name):
+    url = 'http://consuming-python-services-api.azurewebsites.net/cats/random'
+    data = get_data_from_url(url)
+    save_image(folder, name, data)
 
-### Support or Contact
 
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+def get_data_from_url(url):
+    response = requests.get(url, stream=True)
+    return response.raw
+
+
+def save_image(folder, name, data):
+    filename = os.path.join(folder, name + '.jpg')
+    with open(filename, 'wb') as fout:
+        shutil.copyfileobj(data, fout)
+
+```
